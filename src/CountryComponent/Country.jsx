@@ -8,6 +8,7 @@ const Country = () => {
   let [isError, setIsError] = useState(false);
   let [answer, setAnswer] = useState('');
   let [correct, setCorrect] = useState();
+  let [logic, setLogic] = useState([{ correct: 'correct', wrong: 'wrong' }]);
 
   useEffect(() => {
     let countryApi = async () => {
@@ -15,15 +16,15 @@ const Country = () => {
         let response = await fetch('https://restcountries.com/v3.1/all');
         let data = await response.json();
         setAllCountries(data);
-
+        // this extracts countries whose status is 'oficially-assigned'
         // let official = data.map((p) => {
         //   if (p.status == 'officially-assigned') {
         //     return p;
         //   }
         // });
-        setTargetCountry([data[randomizer]]);
 
-        // console.log(data);
+        // set data with index as randomizer
+        setTargetCountry([data[randomizer]]);
       } catch (error) {
         console.log(error);
         setIsError(true);
@@ -32,12 +33,13 @@ const Country = () => {
     countryApi();
     setIsLoading(false);
   }, [randomizer]);
+
+  // generates a random index between 0 and 250
   let funcRandomizer = (prev) => {
     prev = Math.floor(Math.random() * 250);
     setRandomizer(prev);
-    console.log(randomizer);
   };
-  console.log(targetCountry);
+  // checks if error is felt
   if (isError) {
     return (
       <>
@@ -59,7 +61,7 @@ const Country = () => {
 
   //     setAnswer('');
   //   };
-  let checkAnswer = () => {
+  let checkAnswer = (props) => {
     if (answer.toLocaleLowerCase() == props.name.common.toLocaleLowerCase()) {
       setCorrect(true);
     } else {
@@ -69,26 +71,36 @@ const Country = () => {
   let change = (e) => {
     setAnswer(e.target.value);
   };
-
+  // disply affirmation on ui
+  let displayAffirm = () => {
+    if (correct == true) {
+      return (
+        <>
+          <h1>your answer is true</h1>
+        </>
+      );
+    } else {
+      return;
+      <>
+        <h1>your answer is false</h1>
+      </>;
+    }
+  };
   return (
     <>
-      {/* <button
-          type='button'
-          onClick={() => {
-            checkAnswer;
-          }}
-        >
-          {' '}
-          check answer
-        </button> */}
-
       {targetCountry.map((props, index) => {
         return (
           <div className='one-card' key={index}>
             <h1>{props.name.common}</h1>
             <img src={props.flags.png} alt='' />
             <br />
-            <form action=''>
+            <form
+              action=''
+              onSubmit={(e) => {
+                e.preventDefault();
+                setAnswer('');
+              }}
+            >
               <input type='text ' value={answer} onChange={change} />
               <button
                 onClick={() => {
@@ -100,42 +112,55 @@ const Country = () => {
               <button
                 type='submit'
                 onClick={(e) => {
-                  if (
-                    answer.toLocaleLowerCase() ==
-                    props.name.common.toLocaleLowerCase()
-                  ) {
-                    e.preventDefault();
+                  checkAnswer(props);
+                  // displayAffirm;
+                  // console.log(displayAffirm());
+                  //   if (
+                  //     answer.toLocaleLowerCase() ==
+                  //     props.name.common.toLocaleLowerCase()
+                  //   ) {
+                  //     e.preventDefault();
 
-                    setAnswer('');
-                    setCorrect(true);
-                    //   funcRandomizer();
-                  } else {
-                    setCorrect(false);
-                    setAnswer('');
-                  }
+                  //     setAnswer('');
+                  //     setCorrect(true);
+                  //   } else {
+                  //     setAnswer('');
+                  //     setCorrect(false);
+                  //   }
+                  // }
                 }}
               >
                 Am i Correct
               </button>
+              {displayAffirm()}
             </form>
-            {correct ? (
-              <div
-                style={{
-                  backgroundColor: 'green',
-                  color: 'white',
-                  width: '25%',
-                }}
-              >
-                You got it Correct
-              </div>
-            ) : (
-              <div
-                style={{ backgroundColor: 'red', color: 'white', width: '25%' }}
-                className='wrong'
-              >
-                You got it Wrong
-              </div>
-            )}
+            {
+              correct ? (
+                setTimeout(() => {
+                  return (
+                    <div
+                      style={{
+                        backgroundColor: 'green',
+                        color: 'white',
+                        width: '25%',
+                      }}
+                    >
+                      You got it Correct
+                    </div>
+                  );
+                }, 1500)
+              ) : (
+                <div></div>
+              )
+              //  : (
+              //   <div
+              //     style={{ backgroundColor: 'red', color: 'white', width: '25%' }}
+              //     className='wrong'
+              //   >
+              //     You got it Wrong
+              //   </div>
+              // )}
+            }
           </div>
         );
       })}
